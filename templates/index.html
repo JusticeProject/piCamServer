@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Stream</title>
+    <title>piCamServer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,7 +32,7 @@
             flex: 2;
         }
 
-        .detection-section {
+        .status-section {
             flex: 1;
             text-align: left;
             padding: 20px;
@@ -58,13 +58,17 @@
             display: block;
         }
 
-        .status {
+        .video-description {
             margin-top: 15px;
             font-size: 14px;
             color: #666;
         }
 
-        .detection-info {
+        .status-info {
+            margin-top: 15px;
+        }
+
+        .command-section {
             margin-top: 15px;
         }
     </style>
@@ -72,44 +76,76 @@
 
 <body>
     <div class="container">
-        <h1>Security Monitoring System</h1>
+        <h1>piCamServer</h1>
         <div class="content-wrapper">
             <div class="video-section">
                 <h2>Live Video Stream</h2>
                 <div class="video-container">
                     <img src="{{ url_for('video_feed') }}" alt="Video Stream">
                 </div>
-                <div class="status">
+                <div class="description">
                     <p>Streaming from webcam</p>
                 </div>
             </div>
-            <div class="detection-section">
-                <h2>Detection Information</h2>
-                <div class="detection-info">
+            <div class="status-section">
+                <h2>Status Information</h2>
+                <div class="status-info">
                     <p><strong>Last Update:</strong> <span id="timestamp">-</span></p>
-                    <p><strong>Location:</strong> <span id="location">-</span></p>
-                    <p><strong>Total Persons:</strong> <span id="totalPersons">0</span></p>
+                    <p><strong>Msg:</strong> <span id="msg">-</span></p>
+                    <p><strong>Value1:</strong> <span id="value1">0</span></p>
+                    <p><strong>Value2:</strong> <span id="value2">0</span></p>
+                </div>
+                <br>
+                <h2>Send New Commands</h2>
+                <div class="command-section">
+                    <p><label for="inputValue1">New Value1:</label></p>
+                    <p><input type="text" id="inputValue1" name="inputValue1" value="5"></p>
+                    <p><label for="inputValue2">New Value2:</label></p>
+                    <p><input type="text" id="inputValue2" name="inputValue2" value="6"></p>
+                    <p><button id="sendButton">Send Command</button></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function updateDetectionInfo() {
-            fetch('/get_detection')
+        function onSendButtonClick() {
+            const v1 = document.getElementById('inputValue1').value
+            const v2 = document.getElementById('inputValue2').value
+            const data = {value1: v1, value2: v2};
+            console.log('Sending data:', data)
+
+            fetch('/new_command', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)})
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                        }
+                    return response.json();
+                })
+                .then(responseData => {console.log('Success:', responseData);})
+                .catch(error => {console.error('Error:', error);});
+        }
+
+        const button = document.getElementById('sendButton');
+        button.addEventListener('click', onSendButtonClick);
+
+
+        function updateStatusInfo() {
+            fetch('/get_status')
                 .then(response => response.json())
                 .then(data => {
                     if (data.timestamp) {
                         document.getElementById('timestamp').textContent = data.timestamp;
-                        document.getElementById('location').textContent = data.location;
-                        document.getElementById('totalPersons').textContent = data.total_persons;
+                        document.getElementById('msg').textContent = data.msg;
+                        document.getElementById('value1').textContent = data.value1;
+                        document.getElementById('value2').textContent = data.value2;
                     }
                 })
-                .catch(error => console.error('Error fetching detection data:', error));
+                .catch(error => console.error('Error fetching status data:', error));
         }
 
-        // Update detection info every x milliseconds
-        setInterval(updateDetectionInfo, 5000);
+        // Update status info every x milliseconds
+        setInterval(updateStatusInfo, 5000);
     </script>
 </body>
 

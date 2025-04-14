@@ -1,5 +1,6 @@
 from flask import Flask, Response, render_template, request, jsonify
 import cv2
+from datetime import datetime
 
 ###################################################################################################
 
@@ -10,11 +11,12 @@ import cv2
 
 app = Flask(__name__)
 
-# Global variable to store the latest detection data
-latest_detection = {
+# Global variable to store the latest status data
+latest_status = {
     "timestamp": None,
-    "location": None,
-    "total_persons": 0
+    "msg": "",
+    "value1": 0,
+    "value2": 0
 }
 
 ###################################################################################################
@@ -50,18 +52,25 @@ def video_feed():
 
 ###################################################################################################
 
-@app.route("/update_detection", methods=['POST'])
-def update_detection():
-    global latest_detection
+@app.route("/new_command", methods=['POST'])
+def new_command():
+    global latest_status
     data = request.json
-    latest_detection = data
+
+    for key in data.keys():
+        latest_status[key] = data[key]
+
+    latest_status["msg"] = "received new command: " + str(request.json)
+    
     return jsonify({"status": "success"})
 
 ###################################################################################################
 
-@app.route("/get_detection")
-def get_detection():
-    return jsonify(latest_detection)
+@app.route("/get_status")
+def get_status():
+    global latest_status
+    latest_status["timestamp"] = datetime.now().strftime("%d %B %Y %H:%M:%S")
+    return jsonify(latest_status)
 
 ###################################################################################################
 
