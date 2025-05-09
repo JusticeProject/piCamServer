@@ -109,11 +109,12 @@
     </div>
 
     <script>
-        function onSendButtonClick() {
-            const v1 = document.getElementById('inputValue1').value
-            const v2 = document.getElementById('inputValue2').value
+        function onSendButtonClick()
+        {
+            const v1 = document.getElementById('inputValue1').value;
+            const v2 = document.getElementById('inputValue2').value;
             const data = {value1: v1, value2: v2};
-            console.log('Sending data:', data)
+            console.log('Sending data:', data);
 
             fetch('/new_command', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)})
                 .then(response => {
@@ -130,11 +131,13 @@
         button.addEventListener('click', onSendButtonClick);
 
 
-        function updateStatusInfo() {
+        function updateStatusInfo()
+        {
             fetch('/get_status')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.timestamp) {
+                    if (data.timestamp)
+                    {
                         document.getElementById('timestamp').textContent = data.timestamp;
                         document.getElementById('msg').textContent = data.msg;
                         document.getElementById('value1').textContent = data.value1;
